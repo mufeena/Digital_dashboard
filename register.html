@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Teacher Registration</title>
+
+<style>
+body {
+  margin: 0;
+  background: #f4f6f9;
+  font-family: "Segoe UI", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.1);
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 12px;
+}
+
+button {
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Teacher Registration</h2>
+
+  <input id="name" placeholder="Full Name">
+  <select id="dept">
+    <option>Computer Science</option>
+    <option>Computer Applications</option>
+  </select>
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+
+  <button onclick="register()">Register</button>
+</div>
+
+<script>
+function register() {
+  const name = document.getElementById("name").value;
+  const dept = document.getElementById("dept").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if (!name || !email || !password) {
+    alert("All fields required");
+    return;
+  }
+
+  let teachers = JSON.parse(localStorage.getItem("teachers")) || [];
+
+  if (teachers.some(t => t.email === email)) {
+    alert("Email already registered");
+    return;
+  }
+
+  teachers.push({
+    id: Date.now(),
+    name,
+    department: dept,
+    email,
+    password,
+    experience: null,
+    preferredSubjects: [],
+    assignedSheets: 0
+  });
+
+  localStorage.setItem("teachers", JSON.stringify(teachers));
+  alert("Registration successful!");
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

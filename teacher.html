@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Teacher Dashboard</title>
+
+<style>
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f3f4f6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  width: 420px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+label {
+  margin-top: 12px;
+  display: block;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+}
+
+button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Teacher Registration</h2>
+
+  <label>Name</label>
+  <input id="name">
+
+  <label>Department</label>
+  <input id="dept">
+
+  <label>Email</label>
+  <input id="email">
+
+  <label>Years of Experience</label>
+  <input type="number" id="exp">
+
+  <label>Preferred Subjects</label>
+  <select id="subjects" multiple>
+    <option>Java</option>
+    <option>Python</option>
+    <option>C#</option>
+    <option>HTML</option>
+  </select>
+
+  <button onclick="saveTeacher()">Save Profile</button>
+</div>
+
+<script>
+function saveTeacher() {
+  const name = document.getElementById("name").value.trim();
+  const dept = document.getElementById("dept").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const exp = document.getElementById("exp").value;
+  const subjectSelect = document.getElementById("subjects");
+
+  const preferredSubjects = Array.from(subjectSelect.selectedOptions)
+                                .map(o => o.value);
+
+  if (!name || !email || preferredSubjects.length === 0) {
+    alert("Fill all required fields");
+    return;
+  }
+
+  const teachers = JSON.parse(localStorage.getItem("teachers")) || [];
+
+  if (teachers.some(t => t.email === email)) {
+    alert("Teacher already registered");
+    return;
+  }
+
+  teachers.push({
+    name,
+    department: dept,
+    email,
+    experience: Number(exp),
+    preferredSubjects,
+    assignedSheets: 0
+  });
+
+  localStorage.setItem("teachers", JSON.stringify(teachers));
+
+  alert("Profile saved successfully");
+}
+</script>
+
+</body>
+</html>

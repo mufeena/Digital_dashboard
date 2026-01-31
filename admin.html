@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #f4f6f9;
+  display: flex;
+  height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 240px;
+  background: #111827;
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.nav-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background: #2563eb;
+}
+
+/* ===== MAIN ===== */
+.main {
+  flex: 1;
+  padding: 25px;
+  overflow-y: auto;
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+/* ===== CARD ===== */
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  max-width: 900px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.08);
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  color: #374151;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+}
+
+button {
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+/* ===== TABLE ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+  <h2>Admin Panel</h2>
+  <div class="nav-item active" onclick="showSection('upload', this)">Upload Sheets</div>
+  <div class="nav-item" onclick="showSection('view', this)">View Uploads</div>
+  <div class="nav-item" onclick="showSection('teachers', this)">Teacher Profiles</div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+
+<!-- ===== UPLOAD SECTION ===== -->
+<div id="upload" class="section active">
+  <div class="card">
+    <h3>Upload Answer Sheet</h3>
+
+    <label>Course</label>
+    <select id="course">
+      <option>UG</option>
+      <option>PG</option>
+    </select>
+
+    <label>Year</label>
+    <select id="year">
+      <option>1st Year</option>
+      <option>2nd Year</option>
+      <option>3rd Year</option>
+    </select>
+
+    <label>Subject</label>
+    <select id="subject">
+      <option>Java</option>
+      <option>Python</option>
+      <option>C#</option>
+      <option>HTML</option>
+    </select>
+
+    <label>Register Number (Unique)</label>
+    <input id="regno" placeholder="e.g. 24CS001">
+
+    <label>Upload PDF</label>
+    <input type="file" id="file">
+
+    <button onclick="uploadSheet()">Upload Sheet</button>
+  </div>
+</div>
+
+<!-- ===== VIEW UPLOADS ===== -->
+<div id="view" class="section">
+  <div class="card">
+    <h3>Uploaded Answer Sheets</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Register No</th>
+          <th>Course</th>
+          <th>Year</th>
+          <th>Subject</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="sheetTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== TEACHERS ===== -->
+<div id="teachers" class="section">
+  <div class="card" style="max-width:100%">
+    <h3>Teacher Profiles</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Department</th>
+          <th>Email</th>
+          <th>Experience (yrs)</th>
+          <th>Preferred Subjects</th>
+          <th>Assigned Sheets</th>
+        </tr>
+      </thead>
+      <tbody id="teacherTable"></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ===== INIT STORAGE ===== */
+if (!localStorage.getItem("answerSheets")) {
+  localStorage.setItem("answerSheets", JSON.stringify([]));
+}
+
+/* ===== NAVIGATION ===== */
+function showSection(id, el) {
+  document.querySelectorAll(".section").forEach(s =>
+    s.classList.remove("active")
+  );
+  document.getElementById(id).classList.add("active");
+
+  document.querySelectorAll(".nav-item").forEach(n =>
+    n.classList.remove("active")
+  );
+  el.classList.add("active");
+
+  if (id === "view") loadSheets();
+  if (id === "teachers") loadTeachers();
+}
+
+/* ===== UPLOAD LOGIC ===== */
+function uploadSheet() {
+  const regno = document.getElementById("regno").value.trim();
+  const file = document.getElementById("file").files[0];
+
+  if (!regno || !file) {
+    alert("Register number and PDF required");
+    return;
+  }
+
+  const sheets = JSON.parse(localStorage.getItem("answerSheets"));
+
+  if (sheets.some(s => s.registerNo === regno)) {
+    alert("Duplicate register number not allowed");
+    return;
+  }
+
+  sheets.push({
+    registerNo: regno,
+    course: course.value,
+    year: year.value,
+    subject: subject.value,
+    status: "Unassigned"
+  });
+
+  localStorage.setItem("answerSheets", JSON.stringify(sheets));
+  alert("Answer sheet uploaded successfully");
+
+  regno.value = "";
+  file.value = "";
+}
+
+/* ===== VIEW UPLOADS ===== */
+function loadSheets() {
+  const sheets = JSON.parse(localStorage.getItem("answerSheets"));
+  const tbody = document.getElementById("sheetTable");
+  tbody.innerHTML = "";
+
+  if (!sheets.length) {
+    tbody.innerHTML = `<tr><td colspan="5">No uploads yet</td></tr>`;
+    return;
+  }
+
+  sheets.forEach(s => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${s.registerNo}</td>
+        <td>${s.course}</td>
+        <td>${s.year}</td>
+        <td>${s.subject}</td>
+        <td>${s.status}</td>
+      </tr>
+    `;
+  });
+}
+
+/* ===== LOAD TEACHERS (FIXED & SAFE) ===== */
+function loadTeachers() {
+  const tbody = document.getElementById("teacherTable");
+  tbody.innerHTML = "";
+
+  const raw = localStorage.getItem("teachers");
+  if (!raw) {
+    tbody.innerHTML = `<tr><td colspan="6">No teachers registered</td></tr>`;
+    return;
+  }
+
+  let teachers;
+  try {
+    teachers = JSON.parse(raw);
+  } catch {
+    tbody.innerHTML = `<tr><td colspan="6">Invalid teacher data</td></tr>`;
+    return;
+  }
+
+  if (!Array.isArray(teachers) || teachers.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6">No teachers registered</td></tr>`;
+    return;
+  }
+
+  teachers.forEach(t => {
+    const subjects = Array.isArray(t.preferredSubjects)
+      ? t.preferredSubjects.join(", ")
+      : "Not selected";
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${t.name || "-"}</td>
+        <td>${t.department || "-"}</td>
+        <td>${t.email || "-"}</td>
+        <td>${t.experience ?? "-"}</td>
+        <td>${subjects}</td>
+        <td>${t.assignedSheets ?? 0} / 50</td>
+      </tr>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>
